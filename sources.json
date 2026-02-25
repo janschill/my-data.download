@@ -500,5 +500,38 @@
     "estimated_time": "instant",
     "estimated_size": "10MB–100MB",
     "last_verified": "2025-02-01"
+  },
+  {
+    "name": "iMessage",
+    "slug": "imessage",
+    "category": "social",
+    "description": "Text messages, group chats, attachments, and reactions from iMessage and SMS",
+    "website": "https://support.apple.com/messages",
+    "method": "manual_export",
+    "method_details": "iMessage data is stored locally in a SQLite database. Use the imessage-exporter CLI tool to export conversations to HTML, TXT, or PDF.",
+    "steps": [
+      "Install imessage-exporter: cargo install imessage-exporter or brew install imessage-exporter",
+      "Grant Full Disk Access to your terminal in System Settings → Privacy & Security",
+      "Run: imessage-exporter -f html -o ~/imessage-export",
+      "Open the output folder to browse exported conversations"
+    ],
+    "export_format": "html/txt",
+    "export_contents": [
+      "All iMessage and SMS conversations",
+      "Group chat messages",
+      "Attachments (images, videos, files)",
+      "Reactions and tapbacks",
+      "Read receipts and timestamps"
+    ],
+    "use_cases": [
+      "Archive important conversations before switching devices",
+      "Search through years of message history",
+      "Back up sentimental messages and shared photos"
+    ],
+    "export_url": "https://github.com/ReagentX/imessage-exporter",
+    "gdpr": false,
+    "estimated_time": "instant",
+    "estimated_size": "100MB–10GB",
+    "last_verified": "2025-02-01"
   }
 ]
