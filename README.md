@@ -51,7 +51,3 @@ python3 -c "import json; json.load(open('sources.json'))"
 python3 -m http.server
 # Open http://localhost:8000
 ```
-
-## Related
-
-- [samla](https://github.com/janschill/samla) — A local-first toolkit for collecting and analyzing your personal data
