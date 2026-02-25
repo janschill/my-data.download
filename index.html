@@ -153,18 +153,30 @@
         /* ── rendering ── */
 
         function renderCard(s) {
+            return '<article class="source-card" data-category="' + esc(s.category) + '" data-method="' + esc(s.method) + '">'
+                + '<div class="source-header">'
+                +   '<span class="source-name"><a href="' + esc(s.website) + '" target="_blank" rel="noopener">' + esc(s.name) + "</a></span>"
+                +   '<span class="badge badge-' + esc(s.method) + '">' + esc(METHOD_LABELS[s.method] || s.method) + "</span>"
+                +   '<span class="badge badge-category">' + esc(s.category) + "</span>"
+                + "</div>"
+                + '<div class="source-desc">' + esc(s.description) + "</div>"
+                + '<details class="source-details">'
+                +   "<summary>Details</summary>"
+                +   renderDetailsContent(s)
+                + "</details>"
+                + "</article>";
+        }
+
+        function renderDetailsContent(s) {
             var steps = s.steps
                 .map(function (step) { return "<li>" + esc(step) + "</li>"; })
                 .join("");
-
             var contents = s.export_contents
                 .map(function (c) { return "<li>" + esc(c) + "</li>"; })
                 .join("");
-
             var useCases = s.use_cases
                 .map(function (u) { return "<li>" + esc(u) + "</li>"; })
                 .join("");
-
             var meta = "";
             meta += metaItem("Format", s.export_format);
             meta += metaItem("Time", s.estimated_time);
@@ -177,27 +189,15 @@
             }
             meta += metaItem("GDPR", s.gdpr ? "Yes" : "No");
             meta += metaItem("Verified", s.last_verified);
-
-            return '<article class="source-card" data-category="' + esc(s.category) + '" data-method="' + esc(s.method) + '">'
-                + '<div class="source-header">'
-                +   '<span class="source-name"><a href="' + esc(s.website) + '" target="_blank" rel="noopener">' + esc(s.name) + "</a></span>"
-                +   '<span class="badge badge-' + esc(s.method) + '">' + esc(METHOD_LABELS[s.method] || s.method) + "</span>"
-                +   '<span class="badge badge-category">' + esc(s.category) + "</span>"
+            return '<div class="details-content">'
+                + '<div class="details-section"><h4>How to export</h4>'
+                +   "<p>" + esc(s.method_details) + "</p>"
+                +   "<ol>" + steps + "</ol>"
                 + "</div>"
-                + '<div class="source-desc">' + esc(s.description) + "</div>"
-                + '<details class="source-details">'
-                +   "<summary>Details</summary>"
-                +   '<div class="details-content">'
-                +     '<div class="details-section"><h4>How to export</h4>'
-                +       "<p>" + esc(s.method_details) + "</p>"
-                +       "<ol>" + steps + "</ol>"
-                +     "</div>"
-                +     '<div class="details-section"><h4>What you get</h4><ul>' + contents + "</ul></div>"
-                +     '<div class="details-section"><h4>What you can do with it</h4><ul>' + useCases + "</ul></div>"
-                +     '<div class="details-section"><h4>Metadata</h4><div class="meta-grid">' + meta + "</div></div>"
-                +   "</div>"
-                + "</details>"
-                + "</article>";
+                + '<div class="details-section"><h4>What you get</h4><ul>' + contents + "</ul></div>"
+                + '<div class="details-section"><h4>What you can do with it</h4><ul>' + useCases + "</ul></div>"
+                + '<div class="details-section"><h4>Metadata</h4><div class="meta-grid">' + meta + "</div></div>"
+                + "</div>";
         }
 
         function renderTableRow(s) {
@@ -207,7 +207,10 @@
                 + '<td><span class="badge badge-' + esc(s.method) + '">' + esc(METHOD_LABELS[s.method] || s.method) + "</span></td>"
                 + "<td>" + esc(s.export_format) + "</td>"
                 + "<td>" + esc(s.estimated_time) + "</td>"
-                + "</tr>";
+                + "</tr>"
+                + '<tr class="source-row-details"><td colspan="5">'
+                + renderDetailsContent(s)
+                + "</td></tr>";
         }
 
         function renderFilters() {
@@ -378,6 +381,16 @@
         document.getElementById("method-filters").addEventListener("click", handleFilter);
         document.getElementById("sort-options").addEventListener("click", handleFilter);
         document.getElementById("view-options").addEventListener("click", handleFilter);
+
+        document.getElementById("sources-table-body").addEventListener("click", function (e) {
+            if (e.target.closest("a")) return;
+            var row = e.target.closest(".source-row");
+            if (!row) return;
+            var details = row.nextElementSibling;
+            if (details && details.classList.contains("source-row-details")) {
+                details.classList.toggle("open");
+            }
+        });
 
         window.addEventListener("hashchange", function () {
             readHash();
