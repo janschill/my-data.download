@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>my-data.download — A directory of personal data exports</title>
+    <meta name="description" content="How to download your personal data from every service. Step-by-step instructions for Spotify, Netflix, GitHub, Instagram, and more.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <script defer data-domain="my-data.download" src="https://nsa.janschill.de/js/script.js"></script>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">my-data.download</a>
+        <span class="tagline">GET YOUR DATA BACK</span>
+    </header>
+
+    <section class="intro">
+        A directory of <span class="count" id="source-count">—</span> services and how to download your personal data from each one.
+        Your data belongs to you.
+    </section>
+
+    <div class="filters-group">
+        <div class="filters-label">Category</div>
+        <div class="filters" id="category-filters"></div>
+    </div>
+
+    <div class="filters-group">
+        <div class="filters-label">Method</div>
+        <div class="filters" id="method-filters"></div>
+    </div>
+
+    <div class="filters-group">
+        <div class="filters-label">Sort</div>
+        <div class="filters" id="sort-options"></div>
+    </div>
+
+    <main class="sources" id="sources"></main>
+    <div class="no-results" id="no-results">No sources match your filters.</div>
+
+    <footer>
+        <div class="footer-links">
+            <a href="sources.json">JSON</a>
+            <a href="https://github.com/janschill/my-data.download">GitHub</a>
+            <a href="https://github.com/janschill/my-data.download/blob/main/CONTRIBUTING.md">Contribute</a>
+        </div>
+        <div class="footer-note">Add a source via pull request</div>
+    </footer>
+
+    <script>
+    (function () {
+        const METHOD_LABELS = {
+            api: "API",
+            manual_export: "Manual Export",
+            gdpr_request: "GDPR Request"
+        };
+
+        const SORT_OPTIONS = [
+            { key: "name", label: "Name" },
+            { key: "category", label: "Category" },
+            { key: "method", label: "Method" }
+        ];
+
+        const METHOD_ORDER = { api: 0, manual_export: 1, gdpr_request: 2 };
+
+        let sources = [];
+        let activeCategory = "all";
+        let activeMethod = "all";
+        let activeSort = "name";
+
+        function renderCard(s) {
+            const steps = s.steps
+                .map(function (step) { return "<li>" + esc(step) + "</li>"; })
+                .join("");
+
+            const contents = s.export_contents
+                .map(function (c) { return "<li>" + esc(c) + "</li>"; })
+                .join("");
+
+            const useCases = s.use_cases
+                .map(function (u) { return "<li>" + esc(u) + "</li>"; })
+                .join("");
+
+            let meta = "";
+            meta += metaItem("Format", s.export_format);
+            meta += metaItem("Time", s.estimated_time);
+            meta += metaItem("Size", s.estimated_size);
+            if (s.export_url) {
+                meta += metaItem("Export URL", '<a href="' + esc(s.export_url) + '" target="_blank" rel="noopener">' + esc(s.export_url) + "</a>");
+            }
+            if (s.api_docs) {
+                meta += metaItem("API Docs", '<a href="' + esc(s.api_docs) + '" target="_blank" rel="noopener">' + esc(s.api_docs) + "</a>");
+            }
+            meta += metaItem("GDPR", s.gdpr ? "Yes" : "No");
+            meta += metaItem("Verified", s.last_verified);
+
+            return '<article class="source-card" data-category="' + esc(s.category) + '" data-method="' + esc(s.method) + '">'
+                + '<div class="source-header">'
+                +   '<span class="source-name"><a href="' + esc(s.website) + '" target="_blank" rel="noopener">' + esc(s.name) + "</a></span>"
+                +   '<span class="badge badge-' + esc(s.method) + '">' + esc(METHOD_LABELS[s.method] || s.method) + "</span>"
+                +   '<span class="badge badge-category">' + esc(s.category) + "</span>"
+                + "</div>"
+                + '<div class="source-desc">' + esc(s.description) + "</div>"
+                + '<details class="source-details">'
+                +   "<summary>Details</summary>"
+                +   '<div class="details-content">'
+                +     '<div class="details-section"><h4>How to export</h4>'
+                +       "<p>" + esc(s.method_details) + "</p>"
+                +       "<ol>" + steps + "</ol>"
+                +     "</div>"
+                +     '<div class="details-section"><h4>What you get</h4><ul>' + contents + "</ul></div>"
+                +     '<div class="details-section"><h4>What you can do with it</h4><ul>' + useCases + "</ul></div>"
+                +     '<div class="details-section"><h4>Metadata</h4><div class="meta-grid">' + meta + "</div></div>"
+                +   "</div>"
+                + "</details>"
+                + "</article>";
+        }
+
+        function metaItem(label, value) {
+            return '<div class="meta-item"><span class="meta-label">' + esc(label) + '</span><span class="meta-value">' + value + "</span></div>";
+        }
+
+        function esc(str) {
+            if (str == null) return "";
+            var d = document.createElement("div");
+            d.textContent = String(str);
+            return d.innerHTML;
+        }
+
+        function renderFilters() {
+            var categories = ["all"];
+            var methods = ["all"];
+            var catSet = {};
+            var methodSet = {};
+
+            sources.forEach(function (s) {
+                if (!catSet[s.category]) {
+                    catSet[s.category] = true;
+                    categories.push(s.category);
+                }
+                if (!methodSet[s.method]) {
+                    methodSet[s.method] = true;
+                    methods.push(s.method);
+                }
+            });
+
+            document.getElementById("category-filters").innerHTML = categories
+                .map(function (c) {
+                    var label = c === "all" ? "All" : c;
+                    var cls = c === activeCategory ? " active" : "";
+                    return '<button class="pill' + cls + '" data-filter="category" data-value="' + esc(c) + '">' + esc(label) + "</button>";
+                })
+                .join("");
+
+            document.getElementById("method-filters").innerHTML = methods
+                .map(function (m) {
+                    var label = m === "all" ? "All" : (METHOD_LABELS[m] || m);
+                    var cls = m === activeMethod ? " active" : "";
+                    return '<button class="pill' + cls + '" data-filter="method" data-value="' + esc(m) + '">' + esc(label) + "</button>";
+                })
+                .join("");
+
+            document.getElementById("sort-options").innerHTML = SORT_OPTIONS
+                .map(function (o) {
+                    var cls = o.key === activeSort ? " active" : "";
+                    return '<button class="pill' + cls + '" data-filter="sort" data-value="' + esc(o.key) + '">' + esc(o.label) + "</button>";
+                })
+                .join("");
+        }
+
+        function renderSources() {
+            var visible = sources.filter(function (s) {
+                if (activeCategory !== "all" && s.category !== activeCategory) return false;
+                if (activeMethod !== "all" && s.method !== activeMethod) return false;
+                return true;
+            });
+
+            visible.sort(function (a, b) {
+                if (activeSort === "method") {
+                    var d = (METHOD_ORDER[a.method] || 0) - (METHOD_ORDER[b.method] || 0);
+                    return d !== 0 ? d : a.name.localeCompare(b.name);
+                }
+                if (activeSort === "category") {
+                    var d = a.category.localeCompare(b.category);
+                    return d !== 0 ? d : a.name.localeCompare(b.name);
+                }
+                return a.name.localeCompare(b.name);
+            });
+
+            document.getElementById("source-count").textContent = sources.length;
+            document.getElementById("sources").innerHTML = visible.map(renderCard).join("");
+            document.getElementById("no-results").style.display = visible.length === 0 ? "block" : "none";
+        }
+
+        function handleFilter(e) {
+            var btn = e.target.closest(".pill");
+            if (!btn) return;
+            var type = btn.getAttribute("data-filter");
+            var value = btn.getAttribute("data-value");
+            if (type === "category") activeCategory = value;
+            if (type === "method") activeMethod = value;
+            if (type === "sort") activeSort = value;
+            renderFilters();
+            renderSources();
+        }
+
+        document.getElementById("category-filters").addEventListener("click", handleFilter);
+        document.getElementById("method-filters").addEventListener("click", handleFilter);
+        document.getElementById("sort-options").addEventListener("click", handleFilter);
+
+        fetch("sources.json")
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                sources = data;
+                renderFilters();
+                renderSources();
+            });
+    })();
+    </script>
+</body>
+</html>

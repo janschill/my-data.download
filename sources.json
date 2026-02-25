@@ -1,0 +1,504 @@
+[
+  {
+    "name": "Spotify",
+    "slug": "spotify",
+    "category": "media",
+    "description": "Listening history, playlists, saved tracks, and account data",
+    "website": "https://spotify.com",
+    "method": "gdpr_request",
+    "method_details": "Request via privacy settings. Basic data arrives in days, extended streaming history takes up to 30 days.",
+    "steps": [
+      "Go to spotify.com/account/privacy",
+      "Scroll to 'Download your data'",
+      "Request Extended streaming history for full data",
+      "Wait for email with download link (up to 30 days)",
+      "Download the ZIP file"
+    ],
+    "export_format": "json",
+    "export_contents": [
+      "Full streaming history (song, artist, album, timestamp, ms played)",
+      "Playlists and saved tracks",
+      "Search queries and library",
+      "Follow lists and podcast subscriptions"
+    ],
+    "use_cases": [
+      "Analyze listening patterns and top artists over time",
+      "Build a personal music timeline",
+      "Find forgotten favorites from years ago"
+    ],
+    "export_url": "https://spotify.com/account/privacy",
+    "gdpr": true,
+    "estimated_time": "up to 30 days",
+    "estimated_size": "50MB–500MB",
+    "last_verified": "2025-02-01"
+  },
+  {
+    "name": "Netflix",
+    "slug": "netflix",
+    "category": "media",
+    "description": "Viewing history, ratings, account data, and billing information",
+    "website": "https://netflix.com",
+    "method": "gdpr_request",
+    "method_details": "Request personal information copy from account settings. Takes a few days to process.",
+    "steps": [
+      "Go to netflix.com/account/getmyinfo",
+      "Click 'Submit Request'",
+      "Wait for email notification (a few days)",
+      "Download the ZIP file from the link in the email"
+    ],
+    "export_format": "csv",
+    "export_contents": [
+      "Complete viewing history with timestamps",
+      "Ratings and thumbs up/down",
+      "Search history",
+      "Account and billing information"
+    ],
+    "use_cases": [
+      "See every show and movie you've ever watched",
+      "Analyze viewing habits by genre or time of day",
+      "Track how much time you spend watching"
+    ],
+    "export_url": "https://netflix.com/account/getmyinfo",
+    "gdpr": true,
+    "estimated_time": "a few days",
+    "estimated_size": "10MB–100MB",
+    "last_verified": "2025-02-01"
+  },
+  {
+    "name": "GitHub",
+    "slug": "github",
+    "category": "productivity",
+    "description": "Repositories, contributions, issues, pull requests, and stars",
+    "website": "https://github.com",
+    "method": "api",
+    "method_details": "Full REST and GraphQL API. Use the gh CLI or personal access tokens for automated exports.",
+    "steps": [
+      "Install the GitHub CLI: brew install gh",
+      "Authenticate: gh auth login",
+      "List repos: gh repo list --json name,url,createdAt",
+      "Export specific data: gh api /user/repos --paginate"
+    ],
+    "export_format": "json",
+    "export_contents": [
+      "All repositories with metadata",
+      "Contribution history (commits, PRs, issues)",
+      "Stars, followers, and following",
+      "Gists and SSH keys"
+    ],
+    "use_cases": [
+      "Track your open source contributions over time",
+      "Back up all your repositories",
+      "Analyze coding activity patterns"
+    ],
+    "export_url": "https://github.com/settings/admin",
+    "api_docs": "https://docs.github.com/en/rest",
+    "gdpr": false,
+    "estimated_time": "instant",
+    "estimated_size": "varies",
+    "last_verified": "2025-02-01"
+  },
+  {
+    "name": "Apple Health",
+    "slug": "apple-health",
+    "category": "health",
+    "description": "Workouts, heart rate, steps, sleep, body measurements, and all Health app data",
+    "website": "https://apple.com/ios/health",
+    "method": "manual_export",
+    "method_details": "Export directly from the Health app on iPhone. Produces a complete XML archive.",
+    "steps": [
+      "Open the Health app on your iPhone",
+      "Tap your profile picture in the top right",
+      "Scroll down and tap 'Export All Health Data'",
+      "Confirm the export",
+      "AirDrop or share the export.zip to your computer"
+    ],
+    "export_format": "xml",
+    "export_contents": [
+      "Workouts with duration, distance, calories",
+      "Heart rate, blood pressure, blood oxygen readings",
+      "Steps, flights climbed, walking distance",
+      "Sleep analysis and respiratory rate",
+      "Body measurements (weight, height, BMI)"
+    ],
+    "use_cases": [
+      "Track fitness progress over months and years",
+      "Correlate health metrics with lifestyle changes",
+      "Build personal health dashboards"
+    ],
+    "gdpr": false,
+    "estimated_time": "instant",
+    "estimated_size": "100MB–2GB",
+    "last_verified": "2025-02-01"
+  },
+  {
+    "name": "Garmin",
+    "slug": "garmin",
+    "category": "fitness",
+    "description": "Activities, daily summaries, sleep, heart rate, and stress data from Garmin devices",
+    "website": "https://connect.garmin.com",
+    "method": "api",
+    "method_details": "Use GarminDB or the Garmin Connect API to sync all data programmatically.",
+    "steps": [
+      "Install GarminDB: pip install garmindb",
+      "Run initial setup: garmindb_cli.py --setup",
+      "Enter your Garmin Connect credentials",
+      "Sync data: garmindb_cli.py --all --download --import --analyze"
+    ],
+    "export_format": "json",
+    "export_contents": [
+      "All activities with GPS tracks, heart rate, pace",
+      "Daily summaries (steps, calories, distance)",
+      "Sleep data with sleep stages",
+      "Stress and body battery readings",
+      "Heart rate variability"
+    ],
+    "use_cases": [
+      "Analyze training load and recovery trends",
+      "Track sleep quality over time",
+      "Build custom fitness dashboards"
+    ],
+    "api_docs": "https://github.com/tcgoetz/GarminDb",
+    "gdpr": false,
+    "estimated_time": "instant",
+    "estimated_size": "50MB–500MB",
+    "last_verified": "2025-02-01"
+  },
+  {
+    "name": "Strava",
+    "slug": "strava",
+    "category": "fitness",
+    "description": "Activities, routes, segments, and personal records from Strava",
+    "website": "https://strava.com",
+    "method": "gdpr_request",
+    "method_details": "Request a bulk export archive from account settings. Includes all activities and account data.",
+    "steps": [
+      "Go to strava.com and log in",
+      "Go to Settings → My Account",
+      "Under 'Download or Delete Your Account', click 'Get Started'",
+      "Click 'Request Your Archive'",
+      "Download the ZIP when the email arrives"
+    ],
+    "export_format": "csv",
+    "export_contents": [
+      "All activities with GPS data (GPX files)",
+      "Activity metadata (distance, time, elevation)",
+      "Personal records and segment efforts",
+      "Profile and account data"
+    ],
+    "use_cases": [
+      "Back up all your GPS tracks",
+      "Migrate activities to another platform",
+      "Analyze training patterns and PRs over time"
+    ],
+    "export_url": "https://www.strava.com/athlete/delete_your_account",
+    "api_docs": "https://developers.strava.com",
+    "gdpr": true,
+    "estimated_time": "a few hours",
+    "estimated_size": "50MB–1GB",
+    "last_verified": "2025-02-01"
+  },
+  {
+    "name": "Google Takeout",
+    "slug": "google-takeout",
+    "category": "productivity",
+    "description": "Everything Google knows about you — search, location, YouTube, Drive, Gmail, and more",
+    "website": "https://takeout.google.com",
+    "method": "manual_export",
+    "method_details": "Select which Google products to export. Can schedule recurring exports.",
+    "steps": [
+      "Go to takeout.google.com",
+      "Select the products you want to export (or select all)",
+      "Choose export format (ZIP) and delivery method",
+      "Click 'Create export'",
+      "Download when ready (email notification)"
+    ],
+    "export_format": "json",
+    "export_contents": [
+      "Search history and ad activity",
+      "Location history and timeline",
+      "YouTube watch and search history",
+      "Gmail messages and contacts",
+      "Google Drive files",
+      "Chrome bookmarks and history",
+      "Google Photos metadata"
+    ],
+    "use_cases": [
+      "Full backup of your Google account",
+      "Analyze your location history on a map",
+      "See your complete YouTube watch history"
+    ],
+    "export_url": "https://takeout.google.com",
+    "gdpr": true,
+    "estimated_time": "hours to days",
+    "estimated_size": "1GB–100GB+",
+    "last_verified": "2025-02-01"
+  },
+  {
+    "name": "Facebook",
+    "slug": "facebook",
+    "category": "social",
+    "description": "Posts, photos, messages, friends list, ad interactions, and off-Facebook activity",
+    "website": "https://facebook.com",
+    "method": "gdpr_request",
+    "method_details": "Request via Download Your Information page. Choose JSON for structured data.",
+    "steps": [
+      "Go to facebook.com/dyi",
+      "Select format: JSON (recommended for analysis)",
+      "Select date range and media quality",
+      "Click 'Create File'",
+      "Download when ready (email notification)"
+    ],
+    "export_format": "json",
+    "export_contents": [
+      "All posts, comments, and reactions",
+      "Photos and videos with metadata",
+      "Messenger conversations",
+      "Friends list and friend requests",
+      "Ad interactions and off-Facebook activity",
+      "Search history and login locations"
+    ],
+    "use_cases": [
+      "Archive your social media history",
+      "See what data Facebook has collected about you",
+      "Analyze your social connections and interactions"
+    ],
+    "export_url": "https://www.facebook.com/dyi",
+    "gdpr": true,
+    "estimated_time": "hours to days",
+    "estimated_size": "500MB–50GB",
+    "last_verified": "2025-02-01"
+  },
+  {
+    "name": "Instagram",
+    "slug": "instagram",
+    "category": "social",
+    "description": "Posts, stories, messages, followers, likes, and search history",
+    "website": "https://instagram.com",
+    "method": "gdpr_request",
+    "method_details": "Request via Settings or Accounts Center. Choose JSON format for structured data.",
+    "steps": [
+      "Open Instagram → Settings → Accounts Center",
+      "Go to 'Your information and permissions' → 'Download your information'",
+      "Select profiles and data types",
+      "Choose JSON format and date range",
+      "Submit request and download when ready"
+    ],
+    "export_format": "json",
+    "export_contents": [
+      "All posts, stories, and reels with metadata",
+      "Direct messages",
+      "Followers and following lists",
+      "Likes, comments, and saved posts",
+      "Search history and ad interactions"
+    ],
+    "use_cases": [
+      "Archive all your photos and stories",
+      "Analyze posting patterns over time",
+      "See who you've interacted with most"
+    ],
+    "export_url": "https://accountscenter.instagram.com",
+    "gdpr": true,
+    "estimated_time": "hours to days",
+    "estimated_size": "100MB–10GB",
+    "last_verified": "2025-02-01"
+  },
+  {
+    "name": "LinkedIn",
+    "slug": "linkedin",
+    "category": "social",
+    "description": "Connections, messages, profile data, job applications, and ad targeting info",
+    "website": "https://linkedin.com",
+    "method": "gdpr_request",
+    "method_details": "Request from Settings. Select specific data categories or get everything.",
+    "steps": [
+      "Go to linkedin.com/mypreferences/d/download-my-data",
+      "Select the data categories you want",
+      "Click 'Request archive'",
+      "Wait for email notification (up to 24 hours)",
+      "Download the ZIP file"
+    ],
+    "export_format": "csv",
+    "export_contents": [
+      "All connections with dates",
+      "Messages and InMail",
+      "Profile data and endorsements",
+      "Job applications and saved jobs",
+      "Ad targeting criteria LinkedIn uses for you"
+    ],
+    "use_cases": [
+      "Back up your professional network",
+      "Analyze your connection growth over time",
+      "See what data LinkedIn shares with advertisers"
+    ],
+    "export_url": "https://www.linkedin.com/mypreferences/d/download-my-data",
+    "gdpr": true,
+    "estimated_time": "up to 24 hours",
+    "estimated_size": "10MB–500MB",
+    "last_verified": "2025-02-01"
+  },
+  {
+    "name": "Twitter/X",
+    "slug": "twitter",
+    "category": "social",
+    "description": "Tweets, DMs, followers, likes, and ad interaction data",
+    "website": "https://x.com",
+    "method": "gdpr_request",
+    "method_details": "Request archive from account settings. Can take 24 hours or more to generate.",
+    "steps": [
+      "Go to x.com → Settings and privacy",
+      "Your account → Download an archive of your data",
+      "Verify your identity",
+      "Click 'Request archive'",
+      "Download when ready (can take 24h+)"
+    ],
+    "export_format": "json",
+    "export_contents": [
+      "All tweets and replies",
+      "Direct messages",
+      "Followers and following lists",
+      "Likes and bookmarks",
+      "Ad impressions and targeting data",
+      "Profile data and account history"
+    ],
+    "use_cases": [
+      "Archive your tweets before they disappear",
+      "Analyze your posting frequency and engagement",
+      "Search through old DMs and conversations"
+    ],
+    "export_url": "https://x.com/settings/download_your_data",
+    "gdpr": true,
+    "estimated_time": "24 hours+",
+    "estimated_size": "50MB–5GB",
+    "last_verified": "2025-02-01"
+  },
+  {
+    "name": "Reddit",
+    "slug": "reddit",
+    "category": "social",
+    "description": "Posts, comments, saved items, upvotes, and messages",
+    "website": "https://reddit.com",
+    "method": "gdpr_request",
+    "method_details": "Submit a data request from account settings. Download ZIP when ready.",
+    "steps": [
+      "Go to reddit.com/settings/data-request",
+      "Select the data categories you want",
+      "Submit the request",
+      "Wait for email notification",
+      "Download the ZIP file"
+    ],
+    "export_format": "csv",
+    "export_contents": [
+      "All posts and comments",
+      "Upvotes and downvotes",
+      "Saved posts and comments",
+      "Private messages",
+      "Subscribed subreddits"
+    ],
+    "use_cases": [
+      "Search through all your comments and posts",
+      "See your most active subreddits",
+      "Analyze your Reddit activity over time"
+    ],
+    "export_url": "https://www.reddit.com/settings/data-request",
+    "gdpr": true,
+    "estimated_time": "a few days",
+    "estimated_size": "10MB–200MB",
+    "last_verified": "2025-02-01"
+  },
+  {
+    "name": "Letterboxd",
+    "slug": "letterboxd",
+    "category": "media",
+    "description": "Film diary, ratings, reviews, watchlist, and custom lists",
+    "website": "https://letterboxd.com",
+    "method": "manual_export",
+    "method_details": "Instant CSV export from settings. No waiting required.",
+    "steps": [
+      "Go to letterboxd.com/settings/data",
+      "Click 'Export Your Data'",
+      "ZIP file downloads instantly"
+    ],
+    "export_format": "csv",
+    "export_contents": [
+      "Film diary with dates, ratings, and reviews",
+      "Watchlist",
+      "Custom lists",
+      "Ratings history",
+      "Profile and following data"
+    ],
+    "use_cases": [
+      "Analyze your film watching habits",
+      "See your average ratings by genre or year",
+      "Track how many films you watch per month"
+    ],
+    "export_url": "https://letterboxd.com/settings/data",
+    "gdpr": false,
+    "estimated_time": "instant",
+    "estimated_size": "under 1MB",
+    "last_verified": "2025-02-01"
+  },
+  {
+    "name": "PayPal",
+    "slug": "paypal",
+    "category": "finance",
+    "description": "Payment history, fees, currency conversions, and account activity",
+    "website": "https://paypal.com",
+    "method": "manual_export",
+    "method_details": "Download transaction history as CSV from the Activity page. Select custom date ranges.",
+    "steps": [
+      "Go to paypal.com and log in",
+      "Go to Activity → 'All Transactions'",
+      "Click 'Download' at the top",
+      "Select date range and CSV format",
+      "Download the file"
+    ],
+    "export_format": "csv",
+    "export_contents": [
+      "All transactions with dates, amounts, currency",
+      "Fees and conversion rates",
+      "Sender/recipient details",
+      "Transaction status and type"
+    ],
+    "use_cases": [
+      "Track spending patterns across merchants",
+      "Calculate total fees paid over time",
+      "Reconcile payments for tax purposes"
+    ],
+    "export_url": "https://www.paypal.com/activities",
+    "gdpr": true,
+    "estimated_time": "instant",
+    "estimated_size": "under 10MB",
+    "last_verified": "2025-02-01"
+  },
+  {
+    "name": "Safari",
+    "slug": "safari",
+    "category": "browsing",
+    "description": "Browsing history with URLs, page titles, and visit timestamps",
+    "website": "https://apple.com/safari",
+    "method": "manual_export",
+    "method_details": "Safari stores history in a local SQLite database. Copy the file directly or use a tool to export.",
+    "steps": [
+      "Open System Settings → Privacy & Security → Full Disk Access",
+      "Grant access to your terminal app",
+      "Copy ~/Library/Safari/History.db to your working directory",
+      "Query with sqlite3 or import into your preferred tool"
+    ],
+    "export_format": "sqlite",
+    "export_contents": [
+      "All visited URLs with timestamps",
+      "Page titles",
+      "Visit count per URL",
+      "Redirect sources"
+    ],
+    "use_cases": [
+      "Find that article you read last week",
+      "Analyze your most visited websites",
+      "Track browsing patterns over time"
+    ],
+    "gdpr": false,
+    "estimated_time": "instant",
+    "estimated_size": "10MB–100MB",
+    "last_verified": "2025-02-01"
+  }
+]
