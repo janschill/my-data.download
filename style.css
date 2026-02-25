@@ -83,6 +83,34 @@ header {
     border-bottom: 2px solid var(--black);
 }
 
+/* SEARCH BOX */
+
+.search-box {
+    margin-bottom: 20px;
+}
+
+.search-box input {
+    font-family: inherit;
+    font-size: 14px;
+    width: 100%;
+    padding: 10px 14px;
+    border: var(--border);
+    background: var(--white);
+    color: var(--black);
+    outline: none;
+}
+
+.search-box input::placeholder {
+    color: var(--gray);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 11px;
+}
+
+.search-box input:focus {
+    box-shadow: var(--shadow);
+}
+
 /* FILTER PILLS */
 
 .filters {
@@ -90,6 +118,16 @@ header {
     flex-wrap: wrap;
     gap: 6px;
     margin-bottom: 8px;
+}
+
+.filters-row {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+.filters-row .filters-group {
+    margin-bottom: 16px;
 }
 
 .filters-group {
@@ -126,6 +164,77 @@ header {
 .pill.active {
     background: var(--black);
     color: var(--white);
+}
+
+.pill-count {
+    font-size: 10px;
+    opacity: 0.6;
+}
+
+.pill.active .pill-count {
+    opacity: 0.7;
+}
+
+/* SOURCES TABLE (list view) */
+
+.sources-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: var(--border);
+    display: none;
+    font-size: 13px;
+}
+
+.sources-table thead {
+    background: var(--black);
+    color: var(--white);
+}
+
+.sources-table th {
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.sources-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--black);
+}
+
+.sources-table tbody tr:hover {
+    background: var(--light);
+}
+
+.sources-table td a {
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.sources-table td a:hover {
+    color: var(--accent);
+}
+
+.sources-table .badge {
+    font-size: 9px;
+    padding: 1px 6px;
+}
+
+/* JSON VIEW */
+
+.sources-json {
+    display: none;
+    border: var(--border);
+    padding: 16px;
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1.4;
+    overflow-x: auto;
+    background: var(--black);
+    color: var(--white);
+    white-space: pre;
 }
 
 /* SOURCE CARDS */
@@ -387,6 +496,12 @@ footer {
 
     .meta-grid {
         grid-template-columns: 1fr;
+    }
+
+    .sources-table th,
+    .sources-table td {
+        padding: 6px 8px;
+        font-size: 12px;
     }
 
     footer {

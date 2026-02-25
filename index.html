@@ -20,6 +20,10 @@
         Your data belongs to you.
     </section>
 
+    <div class="search-box">
+        <input type="text" id="search" placeholder="Search sources..." autocomplete="off">
+    </div>
+
     <div class="filters-group">
         <div class="filters-label">Category</div>
         <div class="filters" id="category-filters"></div>
@@ -30,12 +34,32 @@
         <div class="filters" id="method-filters"></div>
     </div>
 
-    <div class="filters-group">
-        <div class="filters-label">Sort</div>
-        <div class="filters" id="sort-options"></div>
+    <div class="filters-row">
+        <div class="filters-group">
+            <div class="filters-label">Sort</div>
+            <div class="filters" id="sort-options"></div>
+        </div>
+
+        <div class="filters-group">
+            <div class="filters-label">View</div>
+            <div class="filters" id="view-options"></div>
+        </div>
     </div>
 
     <main class="sources" id="sources"></main>
+    <pre class="sources-json" id="sources-json"></pre>
+    <table class="sources-table" id="sources-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Method</th>
+                <th>Format</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+        <tbody id="sources-table-body"></tbody>
+    </table>
     <div class="no-results" id="no-results">No sources match your filters.</div>
 
     <footer>
@@ -49,39 +73,99 @@
 
     <script>
     (function () {
-        const METHOD_LABELS = {
+        var METHOD_LABELS = {
             api: "API",
             manual_export: "Manual Export",
             gdpr_request: "GDPR Request"
         };
 
-        const SORT_OPTIONS = [
+        var SORT_OPTIONS = [
             { key: "name", label: "Name" },
             { key: "category", label: "Category" },
             { key: "method", label: "Method" }
         ];
 
-        const METHOD_ORDER = { api: 0, manual_export: 1, gdpr_request: 2 };
+        var VIEW_OPTIONS = [
+            { key: "cards", label: "Cards" },
+            { key: "list", label: "List" },
+            { key: "json", label: "JSON" }
+        ];
 
-        let sources = [];
-        let activeCategory = "all";
-        let activeMethod = "all";
-        let activeSort = "name";
+        var METHOD_ORDER = { api: 0, manual_export: 1, gdpr_request: 2 };
+
+        var sources = [];
+        var activeCategory = "all";
+        var activeMethod = "all";
+        var activeSort = "name";
+        var activeSearch = "";
+        var activeView = "cards";
+
+        /* ── helpers ── */
+
+        function esc(str) {
+            if (str == null) return "";
+            var d = document.createElement("div");
+            d.textContent = String(str);
+            return d.innerHTML;
+        }
+
+        function metaItem(label, value) {
+            return '<div class="meta-item"><span class="meta-label">' + esc(label) + '</span><span class="meta-value">' + value + "</span></div>";
+        }
+
+        function matchesSearch(s, term) {
+            if (!term) return true;
+            var t = term.toLowerCase();
+            if (s.name.toLowerCase().indexOf(t) !== -1) return true;
+            if (s.description.toLowerCase().indexOf(t) !== -1) return true;
+            for (var i = 0; i < s.export_contents.length; i++) {
+                if (s.export_contents[i].toLowerCase().indexOf(t) !== -1) return true;
+            }
+            return false;
+        }
+
+        function filterSources(opts) {
+            var cat = opts.category !== undefined ? opts.category : activeCategory;
+            var meth = opts.method !== undefined ? opts.method : activeMethod;
+            var q = opts.search !== undefined ? opts.search : activeSearch;
+            return sources.filter(function (s) {
+                if (cat !== "all" && s.category !== cat) return false;
+                if (meth !== "all" && s.method !== meth) return false;
+                if (!matchesSearch(s, q)) return false;
+                return true;
+            });
+        }
+
+        function sortSources(list) {
+            return list.slice().sort(function (a, b) {
+                if (activeSort === "method") {
+                    var d = (METHOD_ORDER[a.method] || 0) - (METHOD_ORDER[b.method] || 0);
+                    return d !== 0 ? d : a.name.localeCompare(b.name);
+                }
+                if (activeSort === "category") {
+                    var d = a.category.localeCompare(b.category);
+                    return d !== 0 ? d : a.name.localeCompare(b.name);
+                }
+                return a.name.localeCompare(b.name);
+            });
+        }
+
+        /* ── rendering ── */
 
         function renderCard(s) {
-            const steps = s.steps
+            var steps = s.steps
                 .map(function (step) { return "<li>" + esc(step) + "</li>"; })
                 .join("");
 
-            const contents = s.export_contents
+            var contents = s.export_contents
                 .map(function (c) { return "<li>" + esc(c) + "</li>"; })
                 .join("");
 
-            const useCases = s.use_cases
+            var useCases = s.use_cases
                 .map(function (u) { return "<li>" + esc(u) + "</li>"; })
                 .join("");
 
-            let meta = "";
+            var meta = "";
             meta += metaItem("Format", s.export_format);
             meta += metaItem("Time", s.estimated_time);
             meta += metaItem("Size", s.estimated_size);
@@ -116,15 +200,14 @@
                 + "</article>";
         }
 
-        function metaItem(label, value) {
-            return '<div class="meta-item"><span class="meta-label">' + esc(label) + '</span><span class="meta-value">' + value + "</span></div>";
-        }
-
-        function esc(str) {
-            if (str == null) return "";
-            var d = document.createElement("div");
-            d.textContent = String(str);
-            return d.innerHTML;
+        function renderTableRow(s) {
+            return '<tr class="source-row" data-slug="' + esc(s.slug) + '">'
+                + '<td><a href="' + esc(s.website) + '" target="_blank" rel="noopener">' + esc(s.name) + "</a></td>"
+                + "<td>" + esc(s.category) + "</td>"
+                + '<td><span class="badge badge-' + esc(s.method) + '">' + esc(METHOD_LABELS[s.method] || s.method) + "</span></td>"
+                + "<td>" + esc(s.export_format) + "</td>"
+                + "<td>" + esc(s.estimated_time) + "</td>"
+                + "</tr>";
         }
 
         function renderFilters() {
@@ -144,11 +227,31 @@
                 }
             });
 
+            // Count sources for category pills (filter by current method + search)
+            var catCounts = {};
+            var catBase = filterSources({ category: "all" });
+            catCounts["all"] = catBase.length;
+            categories.forEach(function (c) {
+                if (c === "all") return;
+                catCounts[c] = catBase.filter(function (s) { return s.category === c; }).length;
+            });
+
+            // Count sources for method pills (filter by current category + search)
+            var methCounts = {};
+            var methBase = filterSources({ method: "all" });
+            methCounts["all"] = methBase.length;
+            methods.forEach(function (m) {
+                if (m === "all") return;
+                methCounts[m] = methBase.filter(function (s) { return s.method === m; }).length;
+            });
+
             document.getElementById("category-filters").innerHTML = categories
                 .map(function (c) {
                     var label = c === "all" ? "All" : c;
                     var cls = c === activeCategory ? " active" : "";
-                    return '<button class="pill' + cls + '" data-filter="category" data-value="' + esc(c) + '">' + esc(label) + "</button>";
+                    var count = catCounts[c] || 0;
+                    return '<button class="pill' + cls + '" data-filter="category" data-value="' + esc(c) + '">'
+                        + esc(label) + ' <span class="pill-count">' + count + "</span></button>";
                 })
                 .join("");
 
@@ -156,7 +259,9 @@
                 .map(function (m) {
                     var label = m === "all" ? "All" : (METHOD_LABELS[m] || m);
                     var cls = m === activeMethod ? " active" : "";
-                    return '<button class="pill' + cls + '" data-filter="method" data-value="' + esc(m) + '">' + esc(label) + "</button>";
+                    var count = methCounts[m] || 0;
+                    return '<button class="pill' + cls + '" data-filter="method" data-value="' + esc(m) + '">'
+                        + esc(label) + ' <span class="pill-count">' + count + "</span></button>";
                 })
                 .join("");
 
@@ -166,31 +271,79 @@
                     return '<button class="pill' + cls + '" data-filter="sort" data-value="' + esc(o.key) + '">' + esc(o.label) + "</button>";
                 })
                 .join("");
+
+            document.getElementById("view-options").innerHTML = VIEW_OPTIONS
+                .map(function (o) {
+                    var cls = o.key === activeView ? " active" : "";
+                    return '<button class="pill' + cls + '" data-filter="view" data-value="' + esc(o.key) + '">' + esc(o.label) + "</button>";
+                })
+                .join("");
         }
 
         function renderSources() {
-            var visible = sources.filter(function (s) {
-                if (activeCategory !== "all" && s.category !== activeCategory) return false;
-                if (activeMethod !== "all" && s.method !== activeMethod) return false;
-                return true;
-            });
-
-            visible.sort(function (a, b) {
-                if (activeSort === "method") {
-                    var d = (METHOD_ORDER[a.method] || 0) - (METHOD_ORDER[b.method] || 0);
-                    return d !== 0 ? d : a.name.localeCompare(b.name);
-                }
-                if (activeSort === "category") {
-                    var d = a.category.localeCompare(b.category);
-                    return d !== 0 ? d : a.name.localeCompare(b.name);
-                }
-                return a.name.localeCompare(b.name);
-            });
+            var visible = sortSources(filterSources({}));
 
             document.getElementById("source-count").textContent = sources.length;
-            document.getElementById("sources").innerHTML = visible.map(renderCard).join("");
             document.getElementById("no-results").style.display = visible.length === 0 ? "block" : "none";
+
+            var srcEl = document.getElementById("sources");
+            var tblEl = document.getElementById("sources-table");
+            var jsonEl = document.getElementById("sources-json");
+
+            srcEl.style.display = "none";
+            tblEl.style.display = "none";
+            jsonEl.style.display = "none";
+
+            if (activeView === "json") {
+                jsonEl.style.display = "block";
+                jsonEl.textContent = JSON.stringify(visible, null, 2);
+            } else if (activeView === "list") {
+                tblEl.style.display = "table";
+                document.getElementById("sources-table-body").innerHTML = visible.map(renderTableRow).join("");
+            } else {
+                srcEl.style.display = "flex";
+                srcEl.innerHTML = visible.map(renderCard).join("");
+            }
         }
+
+        /* ── URL hash state ── */
+
+        function writeHash() {
+            var parts = [];
+            if (activeCategory !== "all") parts.push("category=" + encodeURIComponent(activeCategory));
+            if (activeMethod !== "all") parts.push("method=" + encodeURIComponent(activeMethod));
+            if (activeSort !== "name") parts.push("sort=" + encodeURIComponent(activeSort));
+            if (activeSearch) parts.push("q=" + encodeURIComponent(activeSearch));
+            if (activeView !== "cards") parts.push("view=" + encodeURIComponent(activeView));
+            var hash = parts.length ? "#" + parts.join("&") : "";
+            if (window.location.hash !== hash) {
+                history.replaceState(null, "", hash || window.location.pathname);
+            }
+        }
+
+        function readHash() {
+            var hash = window.location.hash.replace(/^#/, "");
+            if (!hash) {
+                activeCategory = "all";
+                activeMethod = "all";
+                activeSort = "name";
+                activeSearch = "";
+                activeView = "cards";
+                return;
+            }
+            var params = {};
+            hash.split("&").forEach(function (pair) {
+                var kv = pair.split("=");
+                if (kv.length === 2) params[kv[0]] = decodeURIComponent(kv[1]);
+            });
+            activeCategory = params.category || "all";
+            activeMethod = params.method || "all";
+            activeSort = params.sort || "name";
+            activeSearch = params.q || "";
+            activeView = params.view || "cards";
+        }
+
+        /* ── event handlers ── */
 
         function handleFilter(e) {
             var btn = e.target.closest(".pill");
@@ -200,18 +353,47 @@
             if (type === "category") activeCategory = value;
             if (type === "method") activeMethod = value;
             if (type === "sort") activeSort = value;
+            if (type === "view") activeView = value;
+            writeHash();
             renderFilters();
             renderSources();
         }
 
+        function handleSearch() {
+            activeSearch = document.getElementById("search").value;
+            writeHash();
+            renderFilters();
+            renderSources();
+        }
+
+        document.getElementById("search").addEventListener("input", handleSearch);
+        document.getElementById("search").addEventListener("keydown", function (e) {
+            if (e.key === "Escape") {
+                this.value = "";
+                handleSearch();
+            }
+        });
+
         document.getElementById("category-filters").addEventListener("click", handleFilter);
         document.getElementById("method-filters").addEventListener("click", handleFilter);
         document.getElementById("sort-options").addEventListener("click", handleFilter);
+        document.getElementById("view-options").addEventListener("click", handleFilter);
+
+        window.addEventListener("hashchange", function () {
+            readHash();
+            document.getElementById("search").value = activeSearch;
+            renderFilters();
+            renderSources();
+        });
+
+        /* ── init ── */
 
         fetch("sources.json")
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 sources = data;
+                readHash();
+                document.getElementById("search").value = activeSearch;
                 renderFilters();
                 renderSources();
             });
