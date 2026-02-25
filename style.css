@@ -83,6 +83,89 @@ header {
     border-bottom: 2px solid var(--black);
 }
 
+/* TRACKING BAR */
+
+.tracking-bar {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    border: var(--border);
+    margin-bottom: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.tracking-reset {
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border: 2px solid var(--black);
+    padding: 2px 8px;
+    background: var(--white);
+    color: var(--black);
+    cursor: pointer;
+}
+
+.tracking-reset:hover {
+    background: var(--accent);
+    color: var(--white);
+    border-color: var(--accent);
+}
+
+/* TRACK CHECKBOX */
+
+.track-check {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+}
+
+.track-check input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.track-check .checkmark {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--black);
+    background: var(--white);
+    flex-shrink: 0;
+}
+
+.track-check input:checked + .checkmark {
+    background: var(--green);
+    border-color: var(--green);
+}
+
+.track-check input:checked + .checkmark::after {
+    content: "";
+    display: block;
+    width: 4px;
+    height: 8px;
+    border: solid var(--white);
+    border-width: 0 2px 2px 0;
+    margin: 1px auto 0;
+    transform: rotate(45deg);
+}
+
+.source-card.tracked {
+    opacity: 0.6;
+}
+
+.source-row.tracked {
+    opacity: 0.6;
+}
+
 /* SEARCH BOX */
 
 .search-box {

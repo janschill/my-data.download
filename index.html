@@ -20,6 +20,11 @@
         Your data belongs to you.
     </section>
 
+    <div class="tracking-bar" id="tracking-bar">
+        <span><span class="count" id="tracked-count">0</span> / <span id="tracked-total">—</span> collected</span>
+        <button class="tracking-reset" id="tracking-reset">Reset</button>
+    </div>
+
     <div class="search-box">
         <input type="text" id="search" placeholder="Search sources..." autocomplete="off">
     </div>
@@ -100,6 +105,50 @@
         var activeSearch = "";
         var activeView = "cards";
 
+        /* ── tracking (localStorage) ── */
+
+        var STORAGE_KEY = "mydata_tracked";
+
+        function loadTracked() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveTracked(slugs) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(slugs));
+        }
+
+        var tracked = loadTracked();
+
+        function isTracked(slug) {
+            return tracked.indexOf(slug) !== -1;
+        }
+
+        function toggleTracked(slug) {
+            var i = tracked.indexOf(slug);
+            if (i === -1) { tracked.push(slug); } else { tracked.splice(i, 1); }
+            saveTracked(tracked);
+            updateTrackingBar();
+        }
+
+        function resetTracked() {
+            tracked = [];
+            saveTracked(tracked);
+            renderFilters();
+            renderSources();
+            updateTrackingBar();
+        }
+
+        function updateTrackingBar() {
+            document.getElementById("tracked-count").textContent = tracked.length;
+            document.getElementById("tracked-total").textContent = sources.length;
+            var bar = document.getElementById("tracking-bar");
+            bar.style.display = tracked.length > 0 ? "flex" : "none";
+        }
+
         /* ── helpers ── */
 
         function esc(str) {
@@ -153,8 +202,10 @@
         /* ── rendering ── */
 
         function renderCard(s) {
-            return '<article class="source-card" data-category="' + esc(s.category) + '" data-method="' + esc(s.method) + '">'
+            var chk = isTracked(s.slug) ? " checked" : "";
+            return '<article class="source-card' + (isTracked(s.slug) ? " tracked" : "") + '" data-category="' + esc(s.category) + '" data-method="' + esc(s.method) + '">'
                 + '<div class="source-header">'
+                +   '<label class="track-check" title="Mark as collected"><input type="checkbox" data-slug="' + esc(s.slug) + '"' + chk + '><span class="checkmark"></span></label>'
                 +   '<span class="source-name"><a href="' + esc(s.website) + '" target="_blank" rel="noopener">' + esc(s.name) + "</a></span>"
                 +   '<span class="badge badge-' + esc(s.method) + '">' + esc(METHOD_LABELS[s.method] || s.method) + "</span>"
                 +   '<span class="badge badge-category">' + esc(s.category) + "</span>"
@@ -201,8 +252,9 @@
         }
 
         function renderTableRow(s) {
-            return '<tr class="source-row" data-slug="' + esc(s.slug) + '">'
-                + '<td><a href="' + esc(s.website) + '" target="_blank" rel="noopener">' + esc(s.name) + "</a></td>"
+            var chk = isTracked(s.slug) ? " checked" : "";
+            return '<tr class="source-row' + (isTracked(s.slug) ? " tracked" : "") + '" data-slug="' + esc(s.slug) + '">'
+                + '<td><label class="track-check"><input type="checkbox" data-slug="' + esc(s.slug) + '"' + chk + '><span class="checkmark"></span></label> <a href="' + esc(s.website) + '" target="_blank" rel="noopener">' + esc(s.name) + "</a></td>"
                 + "<td>" + esc(s.category) + "</td>"
                 + '<td><span class="badge badge-' + esc(s.method) + '">' + esc(METHOD_LABELS[s.method] || s.method) + "</span></td>"
                 + "<td>" + esc(s.export_format) + "</td>"
@@ -383,7 +435,7 @@
         document.getElementById("view-options").addEventListener("click", handleFilter);
 
         document.getElementById("sources-table-body").addEventListener("click", function (e) {
-            if (e.target.closest("a")) return;
+            if (e.target.closest("a") || e.target.closest(".track-check")) return;
             var row = e.target.closest(".source-row");
             if (!row) return;
             var details = row.nextElementSibling;
@@ -391,6 +443,21 @@
                 details.classList.toggle("open");
             }
         });
+
+        function handleTrackChange(e) {
+            var cb = e.target;
+            if (cb.type !== "checkbox" || !cb.dataset.slug) return;
+            toggleTracked(cb.dataset.slug);
+            var card = cb.closest(".source-card");
+            if (card) card.classList.toggle("tracked", cb.checked);
+            var row = cb.closest(".source-row");
+            if (row) row.classList.toggle("tracked", cb.checked);
+        }
+
+        document.getElementById("sources").addEventListener("change", handleTrackChange);
+        document.getElementById("sources-table-body").addEventListener("change", handleTrackChange);
+
+        document.getElementById("tracking-reset").addEventListener("click", resetTracked);
 
         window.addEventListener("hashchange", function () {
             readHash();
@@ -409,6 +476,7 @@
                 document.getElementById("search").value = activeSearch;
                 renderFilters();
                 renderSources();
+                updateTrackingBar();
             });
     })();
     </script>
