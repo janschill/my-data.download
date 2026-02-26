@@ -10,13 +10,15 @@ A simple, static website that lists services (Spotify, Netflix, GitHub, Instagra
 
 ## JSON API
 
-The source data is available as JSON at:
+The source data is available as a REST-like API, auto-generated from `sources.json` via CI:
 
 ```
-https://my-data.download/sources.json
+https://my-data.download/api/              → all sources
+https://my-data.download/api/instagram     → just Instagram
+https://my-data.download/api/garmin        → just Garmin
 ```
 
-Use it to build your own tools, dashboards, or automation.
+The raw source of truth is `sources.json` at the repo root. Use it to build your own tools, dashboards, or automation.
 
 ## Contributing
 

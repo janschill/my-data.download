@@ -64,6 +64,10 @@ Every source needs these fields:
 
 If export instructions have changed, update the relevant fields and set `last_verified` to today's date.
 
+## How the API is generated
+
+CI automatically generates `/api/` endpoints from `sources.json` on every push to `main`. Contributors never need to run the build — just edit `sources.json`.
+
 ## Running locally
 
 ```sh
@@ -71,4 +75,8 @@ python3 -m http.server
 # Open http://localhost:8000
 ```
 
-No build step. Edit files, refresh browser.
+No build step needed. Edit files, refresh browser. To preview the API locally:
+
+```sh
+python3 scripts/build-api.py
+```
